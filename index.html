@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>School SmartPass System</title>
+
+    <style>
+        :root {
+            --primary: #2563eb;
+            --success: #16a34a;
+            --background: #f8fafc;
+            --card: #ffffff;
+            --text: #1e293b;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+                Roboto, Helvetica, Arial, sans-serif;
+            background: var(--background);
+            color: var(--text);
+            margin: 0;
+            padding: 15px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 520px;
+            background: var(--card);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        h1, h2 {
+            text-align: center;
+            color: var(--primary);
+            margin-top: 0;
+        }
+
+        h1 {
+            font-size: 25px;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 12px 6px;
+            border: none;
+            background: #e2e8f0;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        .tab-btn.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .panel {
+            display: none;
+        }
+
+        .panel.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        input {
+            width: 100%;
+            padding: 11px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 16px;
+        }
+
+        input:focus {
+            outline: 2px solid #93c5fd;
+            border-color: var(--primary);
+        }
+
+        .action-btn {
+            width: 100%;
+            padding: 12px;
+            background: var(--success);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .action-btn:hover {
+            opacity: 0.92;
+        }
+
+        .pass-box {
+            background: #f1f5f9;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            border-left: 5px solid var(--primary);
+            overflow-wrap: anywhere;
+        }
+
+        .pass-code {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--primary);
+            letter-spacing: 1px;
+            margin: 8px 0;
+        }
+
+        .result-box {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .valid {
+            background: #dcfce7;
+            border: 1px solid #22c55e;
+        }
+
+        .invalid {
+            background: #fee2e2;
+            border: 1px solid #ef4444;
+        }
+
+        .history-details {
+            white-space: pre-line;
+            line-height: 1.7;
+            margin-bottom: 0;
+        }
+
+        .empty-history {
+            text-align: center;
+            color: #64748b;
+            padding: 20px 0;
+        }
+
+        .small-note {
+            color: #64748b;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 380px) {
+            .container {
+                padding: 14px;
+            }
+
+            .tab-btn {
+                font-size: 11px;
+                padding: 10px 3px;
+            }
+
+            h1 {
+                font-size: 21px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+<div class="container">
+
+    <h1>SCHOOL SMARTPASS SYSTEM</h1>
+
+    <!-- NAVIGATION -->
+    <div class="nav-tabs">
+        <button class="tab-btn active"
+                onclick="switchTab('teacher', this)">
+            Teacher Mode
+        </button>
+
+        <button class="tab-btn"
+                onclick="switchTab('guard', this)">
+            Guard Mode
+        </button>
+
+        <button class="tab-btn"
+                onclick="switchTab('history', this)">
+            Pass History
+        </button>
+    </div>
+
+    <!-- TEACHER PANEL -->
+    <div id="teacher-panel" class="panel active">
+        <h2>Issue Digital Pass</h2>
+
+        <div class="form-group">
+            <label for="teacher-name">Teacher's Name</label>
+            <input type="text" id="teacher-name"
+                   placeholder="Enter teacher's name"
+                   autocomplete="name">
+        </div>
+
+        <div class="form-group">
+            <label for="student-name">Student Full Name</label>
+            <input type="text" id="student-name"
+                   placeholder="Enter student's full name">
+        </div>
+
+        <div class="form-group">
+            <label for="student-section">Student Grade and Section / Class</label>
+            <input type="text" id="student-section"
+                   placeholder="Enter student's grade and section">
+        </div>
+
+        <div class="form-group">
+            <label for="destination">Destination</label>
+            <input type="text" id="destination"
+                   placeholder="Enter destination">
+        </div>
+
+        <button class="action-btn" onclick="generatePass()">
+            Generate Passcode
+        </button>
+
+        <div id="pass-output" class="pass-box" style="display:none;">
+            <p style="margin:0;">Give this code to the student:</p>
+
+            <div id="display-code" class="pass-code"></div>
+
+            <p style="margin:0;">
+                <small id="display-time"></small>
+            </p>
+        </div>
+    </div>
+
+    <!-- GUARD PANEL -->
+    <div id="guard-panel" class="panel">
+        <h2>Verify Student Pass</h2>
+
+        <div class="form-group">
+            <label for="search-code">Enter Passcode</label>
+            <input type="text" id="search-code"
+                   placeholder="e.g. PASS-A1B2"
+                   style="text-transform:uppercase;"
+                   autocomplete="off">
+        </div>
+
+        <button class="action-btn"
+                style="background:var(--primary);"
+                onclick="verifyPass()">
+            Check Passcode
+        </button>
+
+        <div id="verification-result" class="result-box">
+            <h3 id="result-status" style="margin-top:0;"></h3>
+            <p id="result-details"
+               style="margin-bottom:0; line-height:1.7;"></p>
+        </div>
+    </div>
+
+    <!-- HISTORY PANEL -->
+    <div id="history-panel" class="panel">
+        <h2>History</h2>
+
+        <p class="small-note" style="text-align:center;">
+            Previously issued passes are kept for up to 7 days.
+            Expired records are automatically removed.
+        </p>
+
+        <button class="action-btn"
+                style="background:var(--primary);"
+                onclick="renderHistory()">
+            Refresh History
+        </button>
+
+        <p id="history-count" class="small-note"></p>
+
+        <div id="history-list"></div>
+    </div>
+
+</div>
+<script type="module">
+  // Import the functions you need from the SDKs you need
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-analytics.js";
+  // TODO: Add SDKs for Firebase products that you want to use
+  // https://firebase.google.com/docs/web/setup#available-libraries
+
+  // Your web app's Firebase configuration
+  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+  const firebaseConfig = {
+    apiKey: "AIzaSyCWGpEhm5F5ZSyBihtn-yYdCDMJhF7uYAw",
+    authDomain: "smartpass-aee71.firebaseapp.com",
+    databaseURL: "https://smartpass-aee71-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "smartpass-aee71",
+    storageBucket: "smartpass-aee71.firebasestorage.app",
+    messagingSenderId: "295141237170",
+    appId: "1:295141237170:web:9b58f4f5f85900b4a144ab",
+    measurementId: "G-RC9WS89JFF"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+</script>
+<script>
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyCWGpEhm5F5ZSyBihtn-yYdCDMJhF7uYAw",
+  authDomain: "smartpass-aee71.firebaseapp.com",
+  databaseURL: "https://smartpass-aee71-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "smartpass-aee71",
+  storageBucket: "smartpass-aee71.firebasestorage.app",
+  messagingSenderId: "295141237170",
+  appId: "1:295141237170:web:9b58f4f5f85900b4a144ab",
+  measurementId: "G-RC9WS89JFF"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+const passesRef = db.ref("passes");
+    // All pass records expire after seven days.
+    const ONE_WEEK = 7 * 24 * 60 * 60 * 1000;
+
+    // Storage prefix separates this app's records from unrelated
+    // localStorage data used by other applications.
+    const STORAGE_PREFIX = "smartpass_record_";
+
+    // NAVIGATION
+    function switchTab(role, button) {
+        document.querySelectorAll(".tab-btn").forEach(btn => {
+            btn.classList.remove("active");
+        });
+
+        document.querySelectorAll(".panel").forEach(panel => {
+            panel.classList.remove("active");
+        });
+
+        button.classList.add("active");
+
+        document.getElementById(role + "-panel")
+            .classList.add("active");
+
+        if (role === "guard") {
+            document.getElementById("verification-result")
+                .style.display = "none";
+            document.getElementById("search-code").value = "";
+        }
+
+        if (role === "history") {
+            renderHistory();
+        }
+
+        cleanExpiredPasses();
+    }
+
+    // RANDOM CODE GENERATOR
+    function makeId(length) {
+        const characters = "ABCDEF0123456789";
+        let result = "";
+
+        const randomValues = new Uint32Array(length);
+        crypto.getRandomValues(randomValues);
+
+        for (let i = 0; i < length; i++) {
+            result += characters[
+                randomValues[i] % characters.length
+            ];
+        }
+
+        return result;
+    }
+
+    // GET A UNIQUE PASS CODE
+    function createUniquePassCode() {
+        let code;
+
+        do {
+            code = "PASS-" + makeId(4);
+        } while (localStorage.getItem(STORAGE_PREFIX + code));
+
+        return code;
+    }
+
+    // SAVE PASS RECORD
+    function savePass(code, data) {
+        localStorage.setItem(
+            STORAGE_PREFIX + code,
+            JSON.stringify(data)
+        );
+    }
+
+    // READ A PASS RECORD
+    function getPass(code) {
+        const raw = localStorage.getItem(STORAGE_PREFIX + code);
+
+        if (!raw) {
+            return null;
+        }
+
+        try {
+            return JSON.parse(raw);
+        } catch (error) {
+            localStorage.removeItem(STORAGE_PREFIX + code);
+            return null;
+        }
+    }
+
+    // DELETE EXPIRED PASSES
+    function cleanExpiredPasses() {
+        const now = Date.now();
+
+        for (let i = localStorage.length - 1; i >= 0; i--) {
+            const key = localStorage.key(i);
+
+            if (!key || !key.startsWith(STORAGE_PREFIX)) {
+                continue;
+            }
+
+            const raw = localStorage.getItem(key);
+
+            try {
+                const data = JSON.parse(raw);
+
+                if (
+                    !data ||
+                    !Number.isFinite(data.createdAt) ||
+                    now - data.createdAt >= ONE_WEEK
+                ) {
+                    localStorage.removeItem(key);
+                }
+            } catch (error) {
+                localStorage.removeItem(key);
+            }
+        }
+    }
+
+    // GENERATE PASS
+    function generatePass() {
+        cleanExpiredPasses();
+
+        const teacher = document
+            .getElementById("teacher-name").value.trim();
+
+        const student = document
+            .getElementById("student-name").value.trim();
+
+        const section = document
+            .getElementById("student-section").value.trim();
+
+        const destination = document
+            .getElementById("destination").value.trim();
+
+        if (!teacher || !student || !section || !destination) {
+            alert("Please fill in all input fields.");
+            return;
+        }
+
+        let passCode;
+
+        try {
+            passCode = createUniquePassCode();
+
+            const now = Date.now();
+
+            const passData = {
+                code: passCode,
+                teacher: teacher,
+                name: student,
+                section: section,
+                destination: destination,
+                createdAt: now,
+                time: new Date(now).toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit"
+                })
+            };
+
+            savePass(passCode, passData);
+
+            document.getElementById("display-code").textContent =
+                passCode;
+
+            document.getElementById("display-time").textContent =
+                "Issued by " + teacher + " at " +
+                new Date(now).toLocaleString();
+
+            document.getElementById("pass-output")
+                .style.display = "block";
+
+            // Keep teacher's name for repeated use.
+            document.getElementById("student-name").value = "";
+            document.getElementById("student-section").value = "";
+            document.getElementById("destination").value = "";
+
+        } catch (error) {
+            alert("Unable to save the pass. Browser storage may be unavailable or full.");
+        }
+    }
+
+    // VERIFY PASS
+    function verifyPass() {
+        cleanExpiredPasses();
+
+        const codeInput = document
+            .getElementById("search-code")
+            .value.trim().toUpperCase();
+
+        const resultBox = document
+            .getElementById("verification-result");
+
+        const statusText = document
+            .getElementById("result-status");
+
+        const detailsText = document
+            .getElementById("result-details");
+
+        resultBox.style.display = "block";
+
+        if (!codeInput) {
+            showInvalid("Please enter a passcode.");
+            return;
+        }
+
+        const data = getPass(codeInput);
+
+        if (!data || !Number.isFinite(data.createdAt)) {
+            showInvalid(
+                "This code does not exist or has expired."
+            );
+            return;
+        }
+
+        // Extra expiration check.
+        if (Date.now() - data.createdAt >= ONE_WEEK) {
+            localStorage.removeItem(STORAGE_PREFIX + codeInput);
+
+            showInvalid(
+                "This pass has expired. Passes are valid for a maximum of 7 days."
+            );
+            return;
+        }
+
+        resultBox.className = "result-box valid";
+        statusText.textContent = "PASS VALID";
+
+        // Use textContent rather than HTML interpolation to avoid
+        // interpreting student-provided text as HTML.
+        detailsText.replaceChildren();
+
+        const fields = [
+            ["Student", data.name],
+            ["Section", data.section],
+            ["Issued By", data.teacher],
+            ["Destination", data.destination],
+            ["Departure Time", new Date(data.createdAt).toLocaleString()],
+            ["Expires", new Date(data.createdAt + ONE_WEEK).toLocaleString()]
+        ];
+
+        fields.forEach(([label, value]) => {
+            const line = document.createElement("div");
+            const strong = document.createElement("strong");
+
+            strong.textContent = label + ": ";
+            line.appendChild(strong);
+            line.appendChild(document.createTextNode(value || ""));
+            detailsText.appendChild(line);
+        });
+    }
+
+    function showInvalid(message) {
+        const resultBox = document
+            .getElementById("verification-result");
+
+        resultBox.className = "result-box invalid";
+
+        document.getElementById("result-status").textContent =
+            "INVALID PASS";
+
+        document.getElementById("result-details").textContent =
+            message;
+    }
+
+    // DISPLAY HISTORY
+    function renderHistory() {
+        cleanExpiredPasses();
+
+        const historyList = document
+            .getElementById("history-list");
+
+        const historyCount = document
+            .getElementById("history-count");
+
+        const records = [];
+
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+
+            if (!key || !key.startsWith(STORAGE_PREFIX)) {
+                continue;
+            }
+
+            try {
+                const data = JSON.parse(localStorage.getItem(key));
+
+                if (data && Number.isFinite(data.createdAt)) {
+                    records.push({
+                        ...data,
+                        code: key.substring(STORAGE_PREFIX.length)
+                    });
+                }
+            } catch (error) {
+                // Invalid records are skipped.
+            }
+        }
+
+        records.sort((a, b) => b.createdAt - a.createdAt);
+
+        historyList.replaceChildren();
+
+        historyCount.textContent =
+            records.length + (records.length === 1
+                ? " saved pass"
+                : " saved passes");
+
+        if (records.length === 0) {
+            const empty = document.createElement("p");
+            empty.className = "empty-history";
+            empty.textContent = "No pass history available.";
+            historyList.appendChild(empty);
+            return;
+        }
+
+        records.forEach(data => {
+            const card = document.createElement("div");
+            card.className = "pass-box";
+
+            const code = document.createElement("div");
+            code.className = "pass-code";
+            code.textContent = data.code;
+
+            const details = document.createElement("p");
+            details.className = "history-details";
+
+            const issued = new Date(data.createdAt);
+            const expires = new Date(data.createdAt + ONE_WEEK);
+
+            details.textContent =
+                "Student: " + (data.name || "") + "\n" +
+                "Section: " + (data.section || "") + "\n" +
+                "Teacher: " + (data.teacher || "") + "\n" +
+                "Destination: " + (data.destination || "") + "\n" +
+                "Issued: " + issued.toLocaleString() + "\n" +
+                "Expires: " + expires.toLocaleString();
+
+            card.appendChild(code);
+            card.appendChild(details);
+            historyList.appendChild(card);
+        });
+    }
+
+    // CLEAN UP ON PAGE LOAD
+    cleanExpiredPasses();
+</script>
+</body>
+</html>
